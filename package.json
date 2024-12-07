@@ -1,0 +1,27 @@
+{
+  "name": "trabalhoppi",
+  "version": "1.0.0",
+  "description": "Trabalho Final PPI - desenvolvimento de um chat",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joaopedroDdev/TrabalhoFinal_PPI.git"
+  },
+  "author": "João Pedro Dourado Ferreira",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joaopedroDdev/TrabalhoFinal_PPI/issues"
+  },
+  "homepage": "https://github.com/joaopedroDdev/TrabalhoFinal_PPI#readme",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1"
+  },
+  "devDependencies": {}
+}

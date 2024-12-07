@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+ <h1>Bate-Papo</h1>
+<form method="post" action="/postarMensagem"></form>
+<label >Usuário: </label>
+<select name="usuario" id="usuarioSelect">
+</select> <br>
+<label>Mensagem: </label>
+<textarea name="mensagem" required></textarea> <br>
+<button type="submit">Enviar</button>
+
+
+<h2>Mensagens</h2>
+    <ul id="messagesList">
+     
+    </ul>
+
+    <a href="/">Menu</a>
+
+    <script>
+      fetch('/usuarios')
+        .then(response => response.json())
+        .then(users => {
+          const select = document.getElementById('usuarioSelect');
+          users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.apelido;
+            option.textContent = user.nome;
+            select.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar usuários:', error));
+
+      fetch('/mensagens')
+        .then(response => response.json())
+        .then(messages => {
+          const messagesList = document.getElementById('messagesList');
+          messages.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = `[${msg.dataHora}] ${msg.usuario}: ${msg.mensagem}`;
+            messagesList.appendChild(li);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar mensagens:', error));
+    </script>
+</body>
+</html>
