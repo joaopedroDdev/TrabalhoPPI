@@ -84,7 +84,7 @@ app.get('/usuarios', (req, res) => {
     `); // lista os nomes e apelidos dos usuarios cadastrados    
   });
 
-       /*---------------------Chat--------------------*/ 
+       /*---------------------Chat-------------------*/ 
        
 
        /*---------------------Mostrar Mensagem - Chat--------------------*/ 
