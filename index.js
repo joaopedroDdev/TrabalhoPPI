@@ -5,9 +5,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const path = ('path');
 
+app.use(express.urlencoded({ extended: true })); // processar dados enviados por formulários
+app.use(express.json()); // Para processar JSON
 
- 
-const db = require ('./public/database');
 
 app.use(express.static('public'));//arquivos estatios sao armazenados na pasta public, navegador pode accesar os arquivos sem o servidor processar
 app.use(bodyParser.urlencoded({ extended: true })); //os dados que sao informados no formulario chegam para o servidor como um ojbeto js. O extend true perimite trabalhar com objetos mais complexos
@@ -21,8 +21,29 @@ app.use(
   })
 );
 
-let users = [];
-let messages = [];
+let usuarios  = [];
+let mensagens = [];
+
+app.get('/', (req, res) => {
+  res.redirect('/login.html'); 
+});
+
+
+app.get('/api/user-info', (req, res) => {
+  if (!req.session || !req.session.user) {
+    // usuário não logado
+    return res.status(401).json({ error: 'Usuário não está logado' });
+  }
+
+  // Pegando o último acesso dos cookies ou o primeirp
+  const lastAccess = req.cookies.lastAccess || 'Primeiro acesso';
+
+  // Enviando a resposta em formato JSON
+  res.json({
+    user: req.session.user, // usuario logado
+    lastAccess: lastAccess, // ultimo acesso
+  });
+});
 
 const requireLogin = (req, res, next) => {
     if (req.session.loggedIn) {
@@ -36,27 +57,30 @@ app.get('/usuarios', (req, res) => {
     res.json(users);  // Retorna a lista de usuários como JSON
   });
 
-  app.get('/',requireLogin, (req, res) => {
+
+  /*---------------------Menu--------------------*/
+
+
+  app.get('/menu', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login.html');
+    }
+
     const lastAccess = req.cookies.lastAccess || 'Primeiro acesso';
-    res.send(`
-      <h1>Bem-vindo, ${req.session.user || 'Usuário'}</h1>
-      <p>Último acesso: ${req.cookies.lastAccess} ||  'Primeiro Acesso'</p>
-      <a href="/cadastroUsuario.html">Cadastro de Usuários</a><br>
-      <a href="/batePapo.html">Bate-papo</a><br>
-      <a href="/logout">Logout</a>
-    `);
-  });
+    res.cookie('lastAccess', new Date().toLocaleString(), { maxAge: 1800000 }); // cookie armazena as informaçõpes por 30 min
+    res.sendFile(path.join(__dirname, 'public', 'menu.html'));
+});
+
 
   
   /*---------------------Login--------------------*/
   app.post('/login', (req, res) => {
-    const { username, password } = req.body; // o req.body vai ter os dados que foram enviados do formulario, usa desestruturação.
-    if (username === 'admin' && password === 'senha') {
-      req.session.loggedIn = true; // usuario logado, pode acessar o chat
-      req.session.user = username;
-      res.cookie('lastAccess', new Date().toLocaleString()); // criar um cookie(lastAcess) para armazazenar os dados de horario do ultimo acesso. 
-      res.redirect('/'); // redireciona para a pagina principal
-    } else {
+    const { email, senha } = req.body; // o req.body vai ter os dados que foram enviados do formulario, usa desestruturação.
+    if (email === 'email@exemploppi.com' && password === 'trabalhofinal') {
+      req.session.userf = email; 
+      res.redirect('/menu.html'); // redireciona para a pagina de menu
+      } 
+      else {
       res.send('<h1>Dados Incorretos</h1><a href="/login.html">Tentar novamente</a>');
     }
   });
@@ -77,65 +101,35 @@ app.get('/usuarios', (req, res) => {
       return res.send('<h1>Preencha todos os Campos!</h1><a href="/cadastroUsuario.html">Voltar</a>');
     }
   
-    db.addUser({ nome, dataNascimento, apelido }); // chamando a funcao de adicionar usuarios.
-    const users = db.getUsers(); //funcao que mostra a lista dos usuarios cadastrado.
-    res.send(`
-      <h1>Usuários Cadastrados:</h1>
-      <ul>${users.map(user => `<li>${user.nome} (${user.apelido})</li>`).join('')}</ul> 
-      <a href="/cadastroUsuario.html">Novo Cadastro</a><br>
-      <a href="/">Menu</a>
-    `); // lista os nomes e apelidos dos usuarios cadastrados    
-  });
+    usuarios.push({ nome, apelido, nascimento });
 
-       /*---------------------Chat-------------------*/ 
+    const users = db.getUsers(); //funcao que mostra a lista dos usuarios cadastrado.
+    res.redirect('/cadastro_Usuario.html')     
+  });
        
 
        /*---------------------Mostrar Mensagem - Chat--------------------*/ 
-  app.get('/batePapo.html',(req,res)=> {
-    const lastAcess = req.cookies.lastAccess || 'Primeiro Acesso';
-    res.send( `
-         <h1>Bate-papo</h1>
-    <form method="POST" action="/postarMensagem">
-      <label>Usuário:</label>
-      <select name="usuario" required id="usuarioSelect">
-        <!-- Os usuários serão preenchidos pelo JavaScript -->
-      </select><br>
-      <label>Mensagem:</label><textarea name="mensagem" required></textarea><br>
-      <button type="submit">Enviar</button>
-    </form>
-    <h2>Mensagens</h2>
-    <ul>${messages.map(msg => `<li>[${msg.dataHora}] ${msg.usuario}: ${msg.mensagem}</li>`).join('')}</ul>
-    <a href="/">Menu</a>
+ app.get('api/usuarios',(req, res)=>{ // lista de usuarios
+  res.json({usuarios})
+ 
 
-    <script>
-      // Popula o select com os usuários cadastrados
-      fetch('/usuarios')
-        .then(response => response.json())
-        .then(users => {
-          const select = document.getElementById('usuarioSelect');
-          users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.apelido;
-            option.textContent = user.nome;
-            select.appendChild(option);
-          });
-        })
-        .catch(error => console.error('Erro ao carregar usuários:', error));
-    </script>`)
-  })
+ app.post('/postarMensagem', (req,res)=>{
+  const { usuario, mensagem } = req.body;  
 
-       /*---------------------Postar Mensagem - Chat--------------------*/ 
-       
-  app.post('/postarMensagem', (req, res) => {
-    const { usuario, mensagem } = req.body; // armazena o usuario e a mensagem no req.body
-    if (!usuario || !mensagem) {
-      return res.send('<h1>Usuário e mensagem são obrigatórios</h1><a href="/batePapo.html">Voltar</a>');
-    }
-    messages.push({ usuario,
-                    mensagem,
-                    dataHora: new Date().toLocaleString() ,// adicionar mensagem no "banco de dados" na hora exata em que for postada(dataHora: new Date().toLocaleString())})
-   }); 
-  });
+  if(!usuario || !mensagem){
+    return res.status(400).send('Usuario e mensagem são obrigatórios!!')
+  }
+ })
+const novaMesnagem = {
+  usuario,
+  mensagem,
+  dataHora: new Date().toLocaleString()
+}
+
+ mensagens.push(novaMesnagem);
+
+ res.redirect('/chat.html');
+})
 
   app.listen(3000, () => {
     console.log('servidor rodando em http:S//localhost:3000');
