@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Principal</title>
+</head>
+<body>
+  <h1>Bem-vindo!</h1>
+  <p id="lastAccess">Último acesso: Carregando...</p>
+  <a href="cadastro_Usuario.html">Cadastro de Usuários</a><br>
+  <a href="chat.html">Bate-papo</a><br>
+  <a href="logout">Logout</a>
+
+  <script>
+    // Busca o último acesso e nome do usuári
+    fetch('/api/user-info')
+  .then(response => response.json())
+  .then(data => {
+    document.querySelector('h1').innerText = `Bem-vindo, ${data.user || 'Usuário'}`;
+    document.querySelector('#lastAccess').innerText = `Último acesso: ${data.lastAccess || 'Primeiro acesso'}`;
+  })
+  .catch(error => console.error('Erro ao buscar informações do usuário:', error));
+

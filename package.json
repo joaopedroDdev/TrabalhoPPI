@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joaopedroDdev/TrabalhoFinal_PPI.git"
+    "url": "git+https://github.com/joaopedroDdev/TrabalhoPPI.git"
   },
   "author": "João Pedro Dourado Ferreira",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/joaopedroDdev/TrabalhoFinal_PPI/issues"
+    "url": "https://github.com/joaopedroDdev/TrabalhoPPI"
   },
-  "homepage": "https://github.com/joaopedroDdev/TrabalhoFinal_PPI#readme",
+  "homepage": "https://github.com/joaopedroDdev/TrabalhoPPI",
   "dependencies": {
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",

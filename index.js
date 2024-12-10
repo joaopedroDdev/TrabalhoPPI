@@ -3,8 +3,11 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const app = express();
+const path = ('path');
+
+
  
-const db = require ('./database');
+const db = require ('./public/database');
 
 app.use(express.static('public'));//arquivos estatios sao armazenados na pasta public, navegador pode accesar os arquivos sem o servidor processar
 app.use(bodyParser.urlencoded({ extended: true })); //os dados que sao informados no formulario chegam para o servidor como um ojbeto js. O extend true perimite trabalhar com objetos mais complexos
@@ -37,7 +40,7 @@ app.get('/usuarios', (req, res) => {
     const lastAccess = req.cookies.lastAccess || 'Primeiro acesso';
     res.send(`
       <h1>Bem-vindo, ${req.session.user || 'Usuário'}</h1>
-      <p>Último acesso: ${lastAccess}</p>
+      <p>Último acesso: ${req.cookies.lastAccess} ||  'Primeiro Acesso'</p>
       <a href="/cadastroUsuario.html">Cadastro de Usuários</a><br>
       <a href="/batePapo.html">Bate-papo</a><br>
       <a href="/logout">Logout</a>
@@ -48,7 +51,7 @@ app.get('/usuarios', (req, res) => {
   /*---------------------Login--------------------*/
   app.post('/login', (req, res) => {
     const { username, password } = req.body; // o req.body vai ter os dados que foram enviados do formulario, usa desestruturação.
-    if (username === 'admin' && password === 'password') {
+    if (username === 'admin' && password === 'senha') {
       req.session.loggedIn = true; // usuario logado, pode acessar o chat
       req.session.user = username;
       res.cookie('lastAccess', new Date().toLocaleString()); // criar um cookie(lastAcess) para armazazenar os dados de horario do ultimo acesso. 
