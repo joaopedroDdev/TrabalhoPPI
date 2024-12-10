@@ -13,8 +13,13 @@
   <a href="logout">Logout</a>
 
   <script>
-    document.getElementById('lastAcess').innerText = document.cookie.replace(/(?:(?:^|.*;\s*)lastAccess\s*=\s*([^;]*).*$)|^.*$/, "$1");
-  </script>
+  document.cookie = "lastAccess=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+
+
+    const lastAccess = document.cookie.replace(/(?:(?:^|.*;\s*)lastAccess\s*=\s*([^;]*).*$)|^.*$/, "$1");
+    console.log("Último acesso (cookie):", lastAccess);
+    document.getElementById('lastAccess').innerText = lastAccess;
+</script>
 
   
 

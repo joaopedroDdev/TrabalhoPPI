@@ -7,31 +7,54 @@
 </head>
 <body>
  <h1>Bate-Papo</h1>
-<form method="post" action="/postarMensagem">
-<label for="usuario" >Usuário: </label>
-<select name="usuario" id="usuario">
+<form method="POST" id="formChat" action="/postarMensagem">
+<label for="usuario" >Usuário: </label> <br>
+<select name="usuario" id="usuario"> 
 </select> <br>
-<label for="mensagem">Mensagem: </label>
-<textarea id="mensagem" name="mensagem" required></textarea> <br>
+<label for="mensagem">Mensagem: </label><br>
+<textarea id="mensagem" name="mensagem" required></textarea> <br><br>
 <button type="submit">Enviar</button>
 </form>
 
 <div id="mensagem"></div>
 
-<a href="/public/menu.html">Menu</a>
+<a href="menu.html">Menu</a>
 
     <script>
-      fetch('/api/usuarios')
-        .then(response => response.json())
-        .then(users => {
-          const usuarioSelect= document.getElementById('usuario');
-         data.usuarios.forEach(usuario=>{
+
+        // Carregar a lista de usuários no campo select ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/usuarios') // Chama a rota que retorna os usuários
+        .then((response) => response.json())
+        .then((usuarios) => {
+          const select = document.getElementById('usuario');
+          usuarios.forEach((usuario) => {
             const option = document.createElement('option');
-            option.value = usuario.nome
-            option.textContent = user.nome;
-            usuarioSelect.appendChild(option);
-          }); 
+            option.value = usuario.apelido; // Use o valor apropriado
+            option.textContent = usuario.nome; // Mostra o nome no dropdown
+            select.appendChild(option);
+          });
         })
+        .catch((error) => console.error('Erro ao carregar usuários:', error));
+    });
+
+     function carregarMensagens() {
+  fetch('/mensagens')
+    .then((response) => response.json())
+    .then((data) => {
+      const listaMensagens = document.getElementById('listaMensagens');
+      listaMensagens.innerHTML = ''; // Limpa a lista
+      data.forEach((msg) => {
+        const li = document.createElement('li');
+        li.textContent = `[${msg.dataHora}] ${msg.usuario}: ${msg.mensagem}`;
+        listaMensagens.appendChild(li);
+      });
+    })
+    .catch((error) => console.error('Erro ao carregar mensagens:', error));
+}
+
+// atualizar lista de mensagens
+carregarMensagens();
        
     </script>
 </body>

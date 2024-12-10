@@ -2,15 +2,14 @@ const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
-const path = ('path');
 
 app.use(express.urlencoded({ extended: true })); // processar dados enviados por formulários
-app.use(express.json()); // Para processar JSON
-
-
+app.use(express.json()); // Para processar JSON 
 app.use(express.static('public'));//arquivos estatios sao armazenados na pasta public, navegador pode accesar os arquivos sem o servidor processar
 app.use(bodyParser.urlencoded({ extended: true })); //os dados que sao informados no formulario chegam para o servidor como um ojbeto js. O extend true perimite trabalhar com objetos mais complexos
+app.use(bodyParser.json());
 app.use(cookieParser()); // vai ler os cookies acessados pelo cliente quando insere algu dado, pode criar ou modificar os cookies que serão enviados ao cliente
 app.use(
   session({
@@ -21,8 +20,10 @@ app.use(
   })
 );
 
-let usuarios  = [];
-let mensagens = [];
+
+
+var usuarios  = [];
+var mensagens = [];
 
 app.get('/', (req, res) => {
   res.redirect('/login.html'); 
@@ -40,21 +41,21 @@ app.get('/api/user-info', (req, res) => {
 
   // Enviando a resposta em formato JSON
   res.json({
-    user: req.session.user, // usuario logado
+    user: req.session.usuario, // usuario logado
     lastAccess: lastAccess, // ultimo acesso
   });
 });
 
 const requireLogin = (req, res, next) => {
     if (req.session.loggedIn) {
-      return next();  // Usuário logado, permite continuar para a próxima função
+      return next();  // usuariop logado, permite continuar para a próxima função
     } else {
-      res.redirect('/login.html');  // Usuário não logado, redireciona para o login
+      res.redirect('/login.html');  // usuario não logado, redireciona para o login
     }
   };
 
 app.get('/usuarios', (req, res) => {
-    res.json(users);  // Retorna a lista de usuários como JSON
+    res.json(usuarios);  // Retorna a lista de usuários como JSON
   });
 
 
@@ -63,21 +64,24 @@ app.get('/usuarios', (req, res) => {
 
   app.get('/menu', (req, res) => {
     if (!req.session.user) {
-        return res.redirect('/login.html');
+      return res.redirect('/login.html');
     }
-
-    const lastAccess = req.cookies.lastAccess || 'Primeiro acesso';
-    res.cookie('lastAccess', new Date().toLocaleString(), { maxAge: 1800000 }); // cookie armazena as informaçõpes por 30 min
+  
+    const Agora = new Date().toLocaleString();
+    res.cookie('lastAccess', Agora, { maxAge: 1800000, path: '/menu.html' }); 
+  
     res.sendFile(path.join(__dirname, 'public', 'menu.html'));
-});
+  });
+  
 
 
   
   /*---------------------Login--------------------*/
   app.post('/login', (req, res) => {
     const { email, senha } = req.body; // o req.body vai ter os dados que foram enviados do formulario, usa desestruturação.
-    if (email === 'email@exemploppi.com' && password === 'trabalhofinal') {
-      req.session.userf = email; 
+    if (email === 'email@exemploppi.com' && senha === 'trabalhofinal') {
+      req.session.user = email; 
+      req.session.loggedIn = true;
       res.redirect('/menu.html'); // redireciona para a pagina de menu
       } 
       else {
@@ -94,30 +98,44 @@ app.get('/usuarios', (req, res) => {
 
 
  /*---------------------Cadastrar--------------------*/ 
-  app.post('/cadastrarUsuario', requireLogin, (req, res) => {
-    const { nome, dataNascimento, apelido } = req.body; // armazena os dados do nome data de nascimento e apelido no req.body, usando desestruturação
-  
-    if (!nome || !dataNascimento || !apelido) {
-      return res.send('<h1>Preencha todos os Campos!</h1><a href="/cadastroUsuario.html">Voltar</a>');
-    }
-  
-    usuarios.push({ nome, apelido, nascimento });
 
-    const users = db.getUsers(); //funcao que mostra a lista dos usuarios cadastrado.
-    res.redirect('/cadastro_Usuario.html')     
-  });
+ app.get('/cadastro_Usuario.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cadastro_Usuario.html'));
+});
+
+app.post('/cadastrarUsuario', (req, res) => {
+  const { nome, dataNascimento, apelido } = req.body;
+
+  if (!nome || !dataNascimento || !apelido) {
+      return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
+  }
+
+  if (new Date(dataNascimento) > new Date()) {
+    return res.status(400).json({ error: 'Data de nascimento não pode ser no futuro!' });
+}
+
+  usuarios.push({ nome, dataNascimento, apelido });
+  res.json({ success: true, message: 'Usuário cadastrado com sucesso!' });
+});
+
+
        
 
+  
        /*---------------------Mostrar Mensagem - Chat--------------------*/ 
+
  app.get('api/usuarios',(req, res)=>{ // lista de usuarios
   res.json({usuarios})
- 
 
- app.post('/postarMensagem', (req,res)=>{
+  app.get('/mensagens', (req, res) => {
+    res.json(mensagens); 
+  });
+
+ app.post('/postarMensagem', requireLogin, (req,res)=>{
   const { usuario, mensagem } = req.body;  
 
   if(!usuario || !mensagem){
-    return res.status(400).send('Usuario e mensagem são obrigatórios!!')
+    return res.status(400).send('Usuario e mensagem são obrigatórios!!  </h1><a href="/chat.html">Voltar</a>')
   }
  })
 const novaMesnagem = {
@@ -131,6 +149,6 @@ const novaMesnagem = {
  res.redirect('/chat.html');
 })
 
-  app.listen(3000, () => {
-    console.log('servidor rodando em http:S//localhost:3000');
+  app.listen(3001, () => {
+    console.log('servidor rodando em http:S//localhost:3001');
   });
